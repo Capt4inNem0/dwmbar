@@ -3,6 +3,7 @@
 # Prints out the CPU load percentage
 
 PREFIX=' '
+PADDING=''
 
 get_load()
 {
@@ -25,8 +26,12 @@ get_load()
   # Keep this as last for our next read
   cpu_last=("${cpu_now[@]}")
   cpu_last_sum=$cpu_sum
-
-  echo "$PREFIX $cpu_usage%"
+  if [ $cpu_usage -gt 9 ]; then
+    PADDING=''
+  else
+    PADDING=' '
+  fi
+  echo "$PREFIX $PADDING$cpu_usage%"
 }
 
 get_load

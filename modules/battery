@@ -3,7 +3,7 @@
 # Prints out battery percentage
 
 CHARGING_ICON=' '
-WARNING_ICON=' '
+WARNING_ICON='  '
 BATTERY_FULL_ICON=''
 BATTERY_2_ICON=''
 BATTERY_3_ICON=''
@@ -13,14 +13,19 @@ FULL_AT=98
 
 BAT_ICON=""
 ICON=""
+notified=0;
+
 
 get_battery()
-{
+{	
+	#if [ ! -d /tmp/notified ]; then
+	#	echo 0 > /tmp/notified
+	#fi
 	# The vast majority of people only use one battery.
-
 	if [ -d /sys/class/power_supply/BAT0 ]; then
 		capacity=$(cat /sys/class/power_supply/BAT0/capacity)
 		charging=$(cat /sys/class/power_supply/BAT0/status)
+		notified=$(cat /tmp/notified)
 		if [[ "$charging" == "Charging" ]]; then
 			ICON="$CHARGING_ICON"
 		elif [[ $capacity -le 25 ]]; then
@@ -28,10 +33,19 @@ get_battery()
 		fi
 
 		if [[ $capacity -ge $FULL_AT ]]; then
+			echo 0 > /tmp/notified
 			BAT_ICON=$BATTERY_FULL_ICON
-		elif [[ $capacity -le 25 ]]; then
+		elif [[ $capacity -le 15 ]]; then
+			echo 1 > /tmp/notified;
+			if [[ $notified == 0 ]]; then
+				echo 1 > /tmp/notified;
+				notified=1;
+				notify-send --expire-time=100000 --urgency=critical Battery "Low battery";
+			fi
+			notified=1;
 			BAT_ICON=$BATTERY_4_ICON
 		elif [[ $capacity -le 60 ]]; then
+			echo 0 > /tmp/notified
 			BAT_ICON=$BATTERY_3_ICON
 		elif [[ $capacity -le $FULL_AT ]]; then
 			BAT_ICON=$BATTERY_2_ICON
